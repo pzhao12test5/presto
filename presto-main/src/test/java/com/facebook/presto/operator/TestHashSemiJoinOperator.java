@@ -96,7 +96,6 @@ public class TestHashSemiJoinOperator
         Operator setBuilderOperator = setBuilderOperatorFactory.createOperator(driverContext);
 
         Driver driver = new Driver(driverContext, buildOperator, setBuilderOperator);
-        driver.initialize();
         while (!driver.isFinished()) {
             driver.process();
         }
@@ -153,7 +152,6 @@ public class TestHashSemiJoinOperator
         Operator setBuilderOperator = setBuilderOperatorFactory.createOperator(driverContext);
 
         Driver driver = new Driver(driverContext, buildOperator, setBuilderOperator);
-        driver.initialize();
         while (!driver.isFinished()) {
             driver.process();
         }
@@ -201,7 +199,6 @@ public class TestHashSemiJoinOperator
         Operator setBuilderOperator = setBuilderOperatorFactory.createOperator(driverContext);
 
         Driver driver = new Driver(driverContext, buildOperator, setBuilderOperator);
-        driver.initialize();
         while (!driver.isFinished()) {
             driver.process();
         }
@@ -253,7 +250,6 @@ public class TestHashSemiJoinOperator
         Operator setBuilderOperator = setBuilderOperatorFactory.createOperator(driverContext);
 
         Driver driver = new Driver(driverContext, buildOperator, setBuilderOperator);
-        driver.initialize();
         while (!driver.isFinished()) {
             driver.process();
         }
@@ -303,7 +299,6 @@ public class TestHashSemiJoinOperator
         Operator setBuilderOperator = setBuilderOperatorFactory.createOperator(driverContext);
 
         Driver driver = new Driver(driverContext, buildOperator, setBuilderOperator);
-        driver.initialize();
         while (!driver.isFinished()) {
             driver.process();
         }

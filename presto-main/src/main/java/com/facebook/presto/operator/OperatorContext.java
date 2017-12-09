@@ -18,7 +18,6 @@ import com.facebook.presto.Session;
 import com.facebook.presto.memory.AbstractAggregatedMemoryContext;
 import com.facebook.presto.memory.QueryContextVisitor;
 import com.facebook.presto.spi.Page;
-import com.facebook.presto.spi.PrestoException;
 import com.facebook.presto.sql.planner.plan.PlanNodeId;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
@@ -27,7 +26,6 @@ import com.google.common.util.concurrent.SettableFuture;
 import io.airlift.stats.CounterStat;
 import io.airlift.units.Duration;
 
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -40,7 +38,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 import static com.facebook.presto.operator.BlockedReason.WAITING_FOR_MEMORY;
-import static com.facebook.presto.spi.StandardErrorCode.GENERIC_INTERNAL_ERROR;
 import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
@@ -80,8 +77,6 @@ public class OperatorContext
     private final CounterStat outputDataSize = new CounterStat();
     private final CounterStat outputPositions = new CounterStat();
 
-    private final AtomicLong physicalWrittenDataSize = new AtomicLong();
-
     private final AtomicReference<SettableFuture<?>> memoryFuture;
     private final AtomicReference<SettableFuture<?>> revocableMemoryFuture;
     private final AtomicReference<BlockedMonitor> blockedMonitor = new AtomicReference<>();
@@ -111,12 +106,9 @@ public class OperatorContext
     private final AtomicReference<Supplier<OperatorInfo>> infoSupplier = new AtomicReference<>();
     private final boolean collectTimings;
 
+    // memoryRevokingRequestedFuture is done iff memory revoking was requested for operator
     @GuardedBy("this")
-    private boolean memoryRevokingRequested;
-
-    @Nullable
-    @GuardedBy("this")
-    private Runnable memoryRevocationRequestListener;
+    private SettableFuture<?> memoryRevokingRequestedFuture = SettableFuture.create();
 
     public OperatorContext(int operatorId, PlanNodeId planNodeId, String operatorType, DriverContext driverContext, Executor executor)
     {
@@ -216,11 +208,6 @@ public class OperatorContext
     {
         outputDataSize.update(sizeInBytes);
         outputPositions.update(positions);
-    }
-
-    public void recordPhysicalWrittenData(long sizeInBytes)
-    {
-        physicalWrittenDataSize.getAndAdd(sizeInBytes);
     }
 
     public void recordBlocked(ListenableFuture<?> blocked)
@@ -412,59 +399,34 @@ public class OperatorContext
 
     public synchronized boolean isMemoryRevokingRequested()
     {
-        return memoryRevokingRequested;
+        return memoryRevokingRequestedFuture.isDone();
     }
 
     /**
      * Returns how much revocable memory will be revoked by the operator
      */
-    public long requestMemoryRevoking()
+    public synchronized long requestMemoryRevoking()
     {
-        long revokedMemory = 0L;
-        Runnable listener = null;
-        synchronized (this) {
-            if (!isMemoryRevokingRequested() && revocableMemoryReservation > 0) {
-                memoryRevokingRequested = true;
-                revokedMemory = revocableMemoryReservation;
-                listener = memoryRevocationRequestListener;
-            }
+        boolean alreadyRequested = isMemoryRevokingRequested();
+        if (!alreadyRequested && revocableMemoryReservation > 0) {
+            memoryRevokingRequestedFuture.set(null);
+            return revocableMemoryReservation;
         }
-        if (listener != null) {
-            runListener(listener);
-        }
-        return revokedMemory;
+        return 0;
     }
 
     public synchronized void resetMemoryRevokingRequested()
     {
-        memoryRevokingRequested = false;
+        SettableFuture<?> currentFuture = memoryRevokingRequestedFuture;
+        if (!currentFuture.isDone()) {
+            return;
+        }
+        memoryRevokingRequestedFuture = SettableFuture.create();
     }
 
-    public void setMemoryRevocationRequestListener(Runnable listener)
+    public synchronized SettableFuture<?> getMemoryRevokingRequestedFuture()
     {
-        requireNonNull(listener, "listener is null");
-
-        boolean shouldNotify;
-        synchronized (this) {
-            checkState(memoryRevocationRequestListener == null, "listener already set");
-            memoryRevocationRequestListener = listener;
-            shouldNotify = memoryRevokingRequested;
-        }
-        // if memory revoking is requested immediately run the listener
-        if (shouldNotify) {
-            runListener(listener);
-        }
-    }
-
-    private static void runListener(Runnable listener)
-    {
-        requireNonNull(listener, "listener is null");
-        try {
-            listener.run();
-        }
-        catch (RuntimeException e) {
-            throw new PrestoException(GENERIC_INTERNAL_ERROR, "Exception while running the listener", e);
-        }
+        return memoryRevokingRequestedFuture;
     }
 
     public void setInfoSupplier(Supplier<OperatorInfo> infoSupplier)
@@ -491,11 +453,6 @@ public class OperatorContext
     public CounterStat getOutputPositions()
     {
         return outputPositions;
-    }
-
-    public long getPhysicalWrittenDataSize()
-    {
-        return physicalWrittenDataSize.get();
     }
 
     @Override
@@ -533,8 +490,6 @@ public class OperatorContext
                 new Duration(getOutputUserNanos.get(), NANOSECONDS).convertToMostSuccinctTimeUnit(),
                 succinctBytes(outputDataSize.getTotalCount()),
                 outputPositions.getTotalCount(),
-
-                succinctBytes(physicalWrittenDataSize.get()),
 
                 new Duration(blockedWallNanos.get(), NANOSECONDS).convertToMostSuccinctTimeUnit(),
 

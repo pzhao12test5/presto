@@ -25,7 +25,6 @@ import static com.facebook.presto.sql.analyzer.RegexLibrary.JONI;
 import static com.facebook.presto.sql.analyzer.RegexLibrary.RE2J;
 import static io.airlift.configuration.testing.ConfigAssertions.assertFullMapping;
 import static io.airlift.configuration.testing.ConfigAssertions.assertRecordedDefaults;
-import static io.airlift.units.DataSize.Unit.GIGABYTE;
 import static io.airlift.units.DataSize.Unit.KILOBYTE;
 import static io.airlift.units.DataSize.Unit.MEGABYTE;
 import static java.util.concurrent.TimeUnit.MINUTES;
@@ -40,13 +39,10 @@ public class TestFeaturesConfig
                 .setResourceGroupsEnabled(false)
                 .setDistributedIndexJoinsEnabled(false)
                 .setDistributedJoinsEnabled(true)
-                .setDictionaryProcessingJoinsEnabled(true)
                 .setFastInequalityJoins(true)
                 .setColocatedJoinsEnabled(false)
                 .setJoinReorderingEnabled(true)
                 .setRedistributeWrites(true)
-                .setScaleWriters(false)
-                .setWriterMinSize(new DataSize(32, MEGABYTE))
                 .setOptimizeMetadataQueries(false)
                 .setOptimizeHashGeneration(true)
                 .setOptimizeSingleDistinct(true)
@@ -71,7 +67,6 @@ public class TestFeaturesConfig
                 .setExchangeCompressionEnabled(false)
                 .setEnableIntermediateAggregations(false)
                 .setPushAggregationThroughJoin(true)
-                .setParseDecimalLiteralsAsDouble(true)
                 .setForceSingleNodeOutput(true)
                 .setPagesIndexEagerCompactionEnabled(false)
                 .setFilterAndProjectMinOutputPageSize(new DataSize(25, KILOBYTE))
@@ -90,13 +85,10 @@ public class TestFeaturesConfig
                 .put("deprecated.legacy-map-subscript", "true")
                 .put("distributed-index-joins-enabled", "true")
                 .put("distributed-joins-enabled", "false")
-                .put("dictionary-processing-joins-enabled", "false")
                 .put("fast-inequality-joins", "false")
                 .put("colocated-joins-enabled", "true")
                 .put("reorder-joins", "false")
                 .put("redistribute-writes", "false")
-                .put("scale-writers", "true")
-                .put("writer-min-size", "42GB")
                 .put("optimizer.optimize-metadata-queries", "true")
                 .put("optimizer.optimize-hash-generation", "false")
                 .put("optimizer.optimize-single-distinct", "false")
@@ -116,7 +108,6 @@ public class TestFeaturesConfig
                 .put("experimental.memory-revoking-target", "0.8")
                 .put("exchange.compression-enabled", "true")
                 .put("optimizer.enable-intermediate-aggregations", "true")
-                .put("parse-decimal-literals-as-double", "false")
                 .put("optimizer.force-single-node-output", "false")
                 .put("pages-index.eager-compaction-enabled", "true")
                 .put("experimental.filter-and-project-min-output-page-size", "1MB")
@@ -129,13 +120,10 @@ public class TestFeaturesConfig
                 .setIterativeOptimizerTimeout(new Duration(10, SECONDS))
                 .setDistributedIndexJoinsEnabled(true)
                 .setDistributedJoinsEnabled(false)
-                .setDictionaryProcessingJoinsEnabled(false)
                 .setFastInequalityJoins(false)
                 .setColocatedJoinsEnabled(true)
                 .setJoinReorderingEnabled(false)
                 .setRedistributeWrites(false)
-                .setScaleWriters(true)
-                .setWriterMinSize(new DataSize(42, GIGABYTE))
                 .setOptimizeMetadataQueries(true)
                 .setOptimizeHashGeneration(false)
                 .setOptimizeSingleDistinct(false)
@@ -158,7 +146,6 @@ public class TestFeaturesConfig
                 .setLegacyOrderBy(true)
                 .setExchangeCompressionEnabled(true)
                 .setEnableIntermediateAggregations(true)
-                .setParseDecimalLiteralsAsDouble(false)
                 .setForceSingleNodeOutput(false)
                 .setPagesIndexEagerCompactionEnabled(true)
                 .setFilterAndProjectMinOutputPageSize(new DataSize(1, MEGABYTE))

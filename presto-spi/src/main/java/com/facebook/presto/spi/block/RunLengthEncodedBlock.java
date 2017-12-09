@@ -18,6 +18,7 @@ import com.facebook.presto.spi.type.Type;
 import io.airlift.slice.Slice;
 import org.openjdk.jol.info.ClassLayout;
 
+import java.util.List;
 import java.util.function.BiConsumer;
 
 import static com.facebook.presto.spi.block.BlockUtil.checkValidPositions;
@@ -95,10 +96,10 @@ public class RunLengthEncodedBlock
     }
 
     @Override
-    public Block copyPositions(int[] positions, int offset, int length)
+    public Block copyPositions(List<Integer> positions)
     {
-        checkValidPositions(positions, offset, length, positionCount);
-        return new RunLengthEncodedBlock(value.copyRegion(0, 1), length);
+        checkValidPositions(positions, positionCount);
+        return new RunLengthEncodedBlock(value.copyRegion(0, 1), positions.size());
     }
 
     @Override

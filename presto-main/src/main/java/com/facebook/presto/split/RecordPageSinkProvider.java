@@ -11,39 +11,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.facebook.presto.plugin.jdbc;
+package com.facebook.presto.split;
 
 import com.facebook.presto.spi.ConnectorInsertTableHandle;
 import com.facebook.presto.spi.ConnectorOutputTableHandle;
 import com.facebook.presto.spi.ConnectorPageSink;
 import com.facebook.presto.spi.ConnectorSession;
+import com.facebook.presto.spi.RecordPageSink;
 import com.facebook.presto.spi.connector.ConnectorPageSinkProvider;
+import com.facebook.presto.spi.connector.ConnectorRecordSinkProvider;
 import com.facebook.presto.spi.connector.ConnectorTransactionHandle;
-
-import javax.inject.Inject;
 
 import static java.util.Objects.requireNonNull;
 
-public class JdbcPageSinkProvider
+public class RecordPageSinkProvider
         implements ConnectorPageSinkProvider
 {
-    private final JdbcClient jdbcClient;
+    private final ConnectorRecordSinkProvider recordSinkProvider;
 
-    @Inject
-    public JdbcPageSinkProvider(JdbcClient jdbcClient)
+    public RecordPageSinkProvider(ConnectorRecordSinkProvider recordSinkProvider)
     {
-        this.jdbcClient = requireNonNull(jdbcClient, "jdbcClient is null");
+        this.recordSinkProvider = requireNonNull(recordSinkProvider, "recordSinkProvider is null");
     }
 
     @Override
-    public ConnectorPageSink createPageSink(ConnectorTransactionHandle transactionHandle, ConnectorSession session, ConnectorOutputTableHandle tableHandle)
+    public ConnectorPageSink createPageSink(ConnectorTransactionHandle transactionHandle, ConnectorSession session, ConnectorOutputTableHandle outputTableHandle)
     {
-        return new JdbcPageSink((JdbcOutputTableHandle) tableHandle, jdbcClient);
+        return new RecordPageSink(recordSinkProvider.getRecordSink(transactionHandle, session, outputTableHandle));
     }
 
     @Override
-    public ConnectorPageSink createPageSink(ConnectorTransactionHandle transactionHandle, ConnectorSession session, ConnectorInsertTableHandle tableHandle)
+    public ConnectorPageSink createPageSink(ConnectorTransactionHandle transactionHandle, ConnectorSession session, ConnectorInsertTableHandle insertTableHandle)
     {
-        return new JdbcPageSink((JdbcOutputTableHandle) tableHandle, jdbcClient);
+        return new RecordPageSink(recordSinkProvider.getRecordSink(transactionHandle, session, insertTableHandle));
     }
 }

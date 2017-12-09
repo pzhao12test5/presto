@@ -111,7 +111,6 @@ public class ParametricAggregation
                 stateSerializer.getSerializedType(),
                 outputType,
                 details.isDecomposable(),
-                details.isOrderSensitive(),
                 new LazyAccumulatorFactoryBinder(metadata, classLoader));
     }
 

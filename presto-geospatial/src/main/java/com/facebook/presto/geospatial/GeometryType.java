@@ -20,8 +20,6 @@ import com.facebook.presto.spi.type.AbstractVariableWidthType;
 import com.facebook.presto.spi.type.TypeSignature;
 import io.airlift.slice.Slice;
 
-import static com.facebook.presto.geospatial.GeometryUtils.deserialize;
-
 public class GeometryType
         extends AbstractVariableWidthType
 {
@@ -75,6 +73,6 @@ public class GeometryType
             return null;
         }
         Slice slice = block.getSlice(position, 0, block.getSliceLength(position));
-        return deserialize(slice).asText();
+        return slice.getInput().readInt();
     }
 }

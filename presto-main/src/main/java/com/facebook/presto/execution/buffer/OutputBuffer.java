@@ -41,11 +41,6 @@ public interface OutputBuffer
     double getUtilization();
 
     /**
-     * Check if the buffer is blocking producers.
-     */
-    boolean isFull();
-
-    /**
      * Add a listener which fires anytime the buffer state changes.
      */
     void addStateChangeListener(StateChangeListener<BufferState> stateChangeListener);

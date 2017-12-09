@@ -269,7 +269,7 @@ public class TestSqlParser
     {
         assertExpression("ARRAY []", new ArrayConstructor(ImmutableList.of()));
         assertExpression("ARRAY [1, 2]", new ArrayConstructor(ImmutableList.of(new LongLiteral("1"), new LongLiteral("2"))));
-        assertExpression("ARRAY [1e0, 2.5e0]", new ArrayConstructor(ImmutableList.of(new DoubleLiteral("1.0"), new DoubleLiteral("2.5"))));
+        assertExpression("ARRAY [1.0, 2.5]", new ArrayConstructor(ImmutableList.of(new DoubleLiteral("1.0"), new DoubleLiteral("2.5"))));
         assertExpression("ARRAY ['hi']", new ArrayConstructor(ImmutableList.of(new StringLiteral("hi"))));
         assertExpression("ARRAY ['hi', 'hello']", new ArrayConstructor(ImmutableList.of(new StringLiteral("hi"), new StringLiteral("hello"))));
     }
@@ -294,6 +294,11 @@ public class TestSqlParser
     public void testDouble()
             throws Exception
     {
+        assertExpression("123.", new DoubleLiteral("123"));
+        assertExpression("123.0", new DoubleLiteral("123"));
+        assertExpression(".5", new DoubleLiteral(".5"));
+        assertExpression("123.5", new DoubleLiteral("123.5"));
+
         assertExpression("123E7", new DoubleLiteral("123E7"));
         assertExpression("123.E7", new DoubleLiteral("123E7"));
         assertExpression("123.0E7", new DoubleLiteral("123E7"));
@@ -501,9 +506,9 @@ public class TestSqlParser
                 row(new StringLiteral("a"), new LongLiteral("1"), new DoubleLiteral("2.2")),
                 row(new StringLiteral("b"), new LongLiteral("2"), new DoubleLiteral("3.3"))));
 
-        assertStatement("VALUES ('a', 1, 2.2e0), ('b', 2, 3.3e0)", valuesQuery);
+        assertStatement("VALUES ('a', 1, 2.2), ('b', 2, 3.3)", valuesQuery);
 
-        assertStatement("SELECT * FROM (VALUES ('a', 1, 2.2e0), ('b', 2, 3.3e0))",
+        assertStatement("SELECT * FROM (VALUES ('a', 1, 2.2), ('b', 2, 3.3))",
                 simpleQuery(
                         selectList(new AllColumns()),
                         subquery(valuesQuery)));
@@ -747,11 +752,6 @@ public class TestSqlParser
         assertExpression("DECIMAL '-12'", new DecimalLiteral("-12"));
         assertExpression("DECIMAL '+.34'", new DecimalLiteral("+.34"));
         assertExpression("DECIMAL '-.34'", new DecimalLiteral("-.34"));
-
-        assertInvalidExpression("123.", "Unexpected decimal literal: 123.");
-        assertInvalidExpression("123.0", "Unexpected decimal literal: 123.0");
-        assertInvalidExpression(".5", "Unexpected decimal literal: .5");
-        assertInvalidExpression("123.5", "Unexpected decimal literal: 123.5");
     }
 
     @Test

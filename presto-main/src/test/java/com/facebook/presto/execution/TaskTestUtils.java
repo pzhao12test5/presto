@@ -65,7 +65,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.facebook.presto.SessionTestUtils.TEST_SESSION;
-import static com.facebook.presto.operator.PipelineExecutionStrategy.UNGROUPED_EXECUTION;
 import static com.facebook.presto.spi.type.BigintType.BIGINT;
 import static com.facebook.presto.spi.type.VarcharType.VARCHAR;
 import static com.facebook.presto.sql.planner.SystemPartitioningHandle.SINGLE_DISTRIBUTION;
@@ -103,8 +102,7 @@ public final class TaskTestUtils
             SOURCE_DISTRIBUTION,
             ImmutableList.of(TABLE_SCAN_NODE_ID),
             new PartitioningScheme(Partitioning.create(SINGLE_DISTRIBUTION, ImmutableList.of()), ImmutableList.of(SYMBOL))
-                    .withBucketToPartition(Optional.of(new int[1])),
-            UNGROUPED_EXECUTION);
+                    .withBucketToPartition(Optional.of(new int[1])));
 
     public static LocalExecutionPlanner createTestingPlanner()
     {

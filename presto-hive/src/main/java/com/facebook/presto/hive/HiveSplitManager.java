@@ -57,7 +57,6 @@ import static com.facebook.presto.hive.HivePartition.UNPARTITIONED_ID;
 import static com.facebook.presto.hive.metastore.MetastoreUtil.makePartName;
 import static com.facebook.presto.spi.StandardErrorCode.GENERIC_INTERNAL_ERROR;
 import static com.facebook.presto.spi.StandardErrorCode.SERVER_SHUTTING_DOWN;
-import static com.facebook.presto.spi.connector.ConnectorSplitManager.SplitSchedulingStrategy.GROUPED_SCHEDULING;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static com.google.common.collect.Iterables.concat;
@@ -81,7 +80,6 @@ public class HiveSplitManager
     private final Executor executor;
     private final CoercionPolicy coercionPolicy;
     private final int maxOutstandingSplits;
-    private final DataSize maxOutstandingSplitsSize;
     private final int minPartitionBatchSize;
     private final int maxPartitionBatchSize;
     private final int maxInitialSplits;
@@ -108,7 +106,6 @@ public class HiveSplitManager
                 coercionPolicy,
                 new CounterStat(),
                 hiveClientConfig.getMaxOutstandingSplits(),
-                hiveClientConfig.getMaxOutstandingSplitsSize(),
                 hiveClientConfig.getMinPartitionBatchSize(),
                 hiveClientConfig.getMaxPartitionBatchSize(),
                 hiveClientConfig.getMaxInitialSplits(),
@@ -125,7 +122,6 @@ public class HiveSplitManager
             CoercionPolicy coercionPolicy,
             CounterStat highMemorySplitSourceCounter,
             int maxOutstandingSplits,
-            DataSize maxOutstandingSplitsSize,
             int minPartitionBatchSize,
             int maxPartitionBatchSize,
             int maxInitialSplits,
@@ -141,7 +137,6 @@ public class HiveSplitManager
         this.highMemorySplitSourceCounter = requireNonNull(highMemorySplitSourceCounter, "highMemorySplitSourceCounter is null");
         checkArgument(maxOutstandingSplits >= 1, "maxOutstandingSplits must be at least 1");
         this.maxOutstandingSplits = maxOutstandingSplits;
-        this.maxOutstandingSplitsSize = maxOutstandingSplitsSize;
         this.minPartitionBatchSize = minPartitionBatchSize;
         this.maxPartitionBatchSize = maxPartitionBatchSize;
         this.maxInitialSplits = maxInitialSplits;
@@ -150,7 +145,7 @@ public class HiveSplitManager
     }
 
     @Override
-    public ConnectorSplitSource getSplits(ConnectorTransactionHandle transaction, ConnectorSession session, ConnectorTableLayoutHandle layoutHandle, SplitSchedulingStrategy splitSchedulingStrategy)
+    public ConnectorSplitSource getSplits(ConnectorTransactionHandle transaction, ConnectorSession session, ConnectorTableLayoutHandle layoutHandle)
     {
         HiveTableLayoutHandle layout = (HiveTableLayoutHandle) layoutHandle;
 
@@ -163,7 +158,6 @@ public class HiveSplitManager
         SchemaTableName tableName = partition.getTableName();
         List<HiveBucketing.HiveBucket> buckets = partition.getBuckets();
         Optional<HiveBucketHandle> bucketHandle = layout.getBucketHandle();
-        checkArgument(splitSchedulingStrategy != GROUPED_SCHEDULING || bucketHandle.isPresent(), "SchedulingPolicy is bucketed, but BucketHandle is not present");
 
         // sort partitions
         partitions = Ordering.natural().onResultOf(HivePartition::getPartitionId).reverse().sortedCopy(partitions);
@@ -189,37 +183,17 @@ public class HiveSplitManager
                 splitLoaderConcurrency,
                 recursiveDfsWalkerEnabled);
 
-        HiveSplitSource splitSource;
-        switch (splitSchedulingStrategy) {
-            case UNGROUPED_SCHEDULING:
-                splitSource = HiveSplitSource.allAtOnce(
-                        session,
-                        table.get().getDatabaseName(),
-                        table.get().getTableName(),
-                        layout.getCompactEffectivePredicate(),
-                        maxInitialSplits,
-                        maxOutstandingSplits,
-                        maxOutstandingSplitsSize,
-                        hiveSplitLoader,
-                        executor,
-                        new CounterStat());
-                break;
-            case GROUPED_SCHEDULING:
-                splitSource = HiveSplitSource.bucketed(
-                        session,
-                        table.get().getDatabaseName(),
-                        table.get().getTableName(),
-                        layout.getCompactEffectivePredicate(),
-                        maxInitialSplits,
-                        maxOutstandingSplits,
-                        new DataSize(32, MEGABYTE),
-                        hiveSplitLoader,
-                        executor,
-                        new CounterStat());
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown splitSchedulingStrategy: " + splitSchedulingStrategy);
-        }
+        HiveSplitSource splitSource = new HiveSplitSource(
+                session,
+                table.get().getDatabaseName(),
+                table.get().getTableName(),
+                layout.getCompactEffectivePredicate(),
+                maxInitialSplits,
+                maxOutstandingSplits,
+                new DataSize(32, MEGABYTE),
+                hiveSplitLoader,
+                executor,
+                highMemorySplitSourceCounter);
         hiveSplitLoader.start(splitSource);
 
         return splitSource;

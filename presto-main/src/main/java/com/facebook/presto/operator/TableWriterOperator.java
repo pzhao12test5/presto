@@ -128,7 +128,6 @@ public class TableWriterOperator
     private long rowCount;
     private boolean committed;
     private boolean closed;
-    private long writtenBytes;
 
     public TableWriterOperator(OperatorContext operatorContext,
             ConnectorPageSink pageSink,
@@ -159,7 +158,6 @@ public class TableWriterOperator
             state = State.FINISHING;
             finishFuture = pageSink.finish();
             blocked = toListenableFuture(finishFuture);
-            updateWrittenBytes();
         }
     }
 
@@ -208,7 +206,6 @@ public class TableWriterOperator
             this.blocked = toListenableFuture(future);
         }
         rowCount += page.getPositionCount();
-        updateWrittenBytes();
     }
 
     @Override
@@ -221,7 +218,6 @@ public class TableWriterOperator
 
         Collection<Slice> fragments = getFutureValue(finishFuture);
         committed = true;
-        updateWrittenBytes();
 
         PageBuilder page = new PageBuilder(TYPES);
         BlockBuilder rowsBuilder = page.getBlockBuilder(0);
@@ -252,12 +248,5 @@ public class TableWriterOperator
                 pageSink.abort();
             }
         }
-    }
-
-    private void updateWrittenBytes()
-    {
-        long current = pageSink.getCompletedBytes();
-        operatorContext.recordPhysicalWrittenData(current - writtenBytes);
-        writtenBytes = current;
     }
 }

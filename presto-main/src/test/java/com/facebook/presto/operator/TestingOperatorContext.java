@@ -13,7 +13,6 @@
  */
 package com.facebook.presto.operator;
 
-import com.facebook.presto.execution.Lifespan;
 import com.facebook.presto.sql.planner.plan.PlanNodeId;
 import com.facebook.presto.testing.TestingSession;
 import com.facebook.presto.testing.TestingTaskContext;
@@ -49,8 +48,7 @@ public class TestingOperatorContext
                 pipelineContext,
                 executor,
                 scheduledExecutor,
-                false,
-                Lifespan.taskWide());
+                false);
 
         OperatorContext operatorContext = driverContext.addOperatorContext(
                 1,

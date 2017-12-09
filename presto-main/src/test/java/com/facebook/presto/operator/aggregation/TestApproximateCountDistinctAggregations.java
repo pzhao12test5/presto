@@ -38,15 +38,6 @@ public class TestApproximateCountDistinctAggregations
         assertEquals(standardErrorToBuckets(0.0162), 8192);
         assertEquals(standardErrorToBuckets(0.0116), 8192);
         assertEquals(standardErrorToBuckets(0.0115), 8192);
-        assertEquals(standardErrorToBuckets(0.0114), 16384);
-        assertEquals(standardErrorToBuckets(0.008126), 16384);
-        assertEquals(standardErrorToBuckets(0.008125), 16384);
-        assertEquals(standardErrorToBuckets(0.008124), 32768);
-        assertEquals(standardErrorToBuckets(0.00576), 32768);
-        assertEquals(standardErrorToBuckets(0.00575), 32768);
-        assertEquals(standardErrorToBuckets(0.00574), 65536);
-        assertEquals(standardErrorToBuckets(0.0040626), 65536);
-        assertEquals(standardErrorToBuckets(0.0040625), 65536);
     }
 
     @Test
@@ -55,7 +46,7 @@ public class TestApproximateCountDistinctAggregations
     {
         try {
             // Lower bound
-            standardErrorToBuckets(0.0040624);
+            standardErrorToBuckets(0.01149);
             fail();
         }
         catch (PrestoException e) {

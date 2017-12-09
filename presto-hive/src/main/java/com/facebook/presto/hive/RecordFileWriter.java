@@ -113,13 +113,6 @@ public class RecordFileWriter
     }
 
     @Override
-    public long getWrittenBytes()
-    {
-        // there is no good way to get this from RecordWriter
-        return 0;
-    }
-
-    @Override
     public long getSystemMemoryUsage()
     {
         return estimatedWriterSystemMemoryUsage;

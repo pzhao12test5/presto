@@ -102,12 +102,6 @@ public class PartitionedOutputBuffer
     }
 
     @Override
-    public boolean isFull()
-    {
-        return memoryManager.isFull();
-    }
-
-    @Override
     public OutputBufferInfo getInfo()
     {
         //

@@ -71,24 +71,18 @@ public class DbResourceGroupConfigurationManager
     private final ScheduledExecutorService configExecutor = newSingleThreadScheduledExecutor(daemonThreadsNamed("DbResourceGroupConfigurationManager"));
     private final AtomicBoolean started = new AtomicBoolean();
     private final String environment;
-    private final boolean exactMatchSelectorEnabled;
 
     @Inject
-    public DbResourceGroupConfigurationManager(ClusterMemoryPoolManager memoryPoolManager, DbResourceGroupConfig config, ResourceGroupsDao dao, @ForEnvironment String environment)
+    public DbResourceGroupConfigurationManager(ClusterMemoryPoolManager memoryPoolManager, ResourceGroupsDao dao, @ForEnvironment String environment)
     {
         super(memoryPoolManager);
         requireNonNull(memoryPoolManager, "memoryPoolManager is null");
-        requireNonNull(config, "config is null");
         requireNonNull(dao, "daoProvider is null");
         this.environment = requireNonNull(environment, "environment is null");
-        this.exactMatchSelectorEnabled = config.getExactMatchSelectorEnabled();
         this.dao = dao;
         this.dao.createResourceGroupsGlobalPropertiesTable();
         this.dao.createResourceGroupsTable();
         this.dao.createSelectorsTable();
-        if (exactMatchSelectorEnabled) {
-            this.dao.createExactMatchSelectorsTable();
-        }
         load();
     }
 
@@ -163,16 +157,7 @@ public class DbResourceGroupConfigurationManager
             this.resourceGroupSpecs = resourceGroupSpecs;
             this.cpuQuotaPeriod.set(managerSpec.getCpuQuotaPeriod());
             this.rootGroups.set(managerSpec.getRootGroups());
-            List<ResourceGroupSelector> selectors = buildSelectors(managerSpec);
-            if (exactMatchSelectorEnabled) {
-                ImmutableList.Builder<ResourceGroupSelector> builder = ImmutableList.builder();
-                builder.add(new DbSourceExactMatchSelector(environment, dao));
-                builder.addAll(selectors);
-                this.selectors.set(builder.build());
-            }
-            else {
-                this.selectors.set(selectors);
-            }
+            this.selectors.set(buildSelectors(managerSpec));
 
             configureChangedGroups(changedSpecs);
             disableDeletedGroups(deletedSpecs);
@@ -250,14 +235,15 @@ public class DbResourceGroupConfigurationManager
         // Specs are built from db records, validate and return manager spec
         List<ResourceGroupSpec> rootGroups = rootGroupIds.stream().map(resourceGroupSpecMap::get).collect(Collectors.toList());
 
-        List<SelectorSpec> selectors = dao.getSelectors(environment)
+        List<SelectorSpec> selectors = dao.getSelectors()
                 .stream()
+                .filter(selectorRecord -> resourceGroupIdTemplateMap.containsKey(selectorRecord.getResourceGroupId()))
                 .map(selectorRecord ->
                 new SelectorSpec(
                         selectorRecord.getUserRegex(),
                         selectorRecord.getSourceRegex(),
-                        selectorRecord.getQueryType(),
                         selectorRecord.getClientTags(),
+                        Optional.empty(),
                         resourceGroupIdTemplateMap.get(selectorRecord.getResourceGroupId()))
         ).collect(Collectors.toList());
         ManagerSpec managerSpec = new ManagerSpec(rootGroups, selectors, getCpuQuotaPeriodFromDb());

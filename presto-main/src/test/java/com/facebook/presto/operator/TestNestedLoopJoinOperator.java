@@ -499,7 +499,6 @@ public class TestNestedLoopJoinOperator
         Driver driver = new Driver(driverContext,
                 valuesOperatorFactory.createOperator(driverContext),
                 nestedLoopBuildOperatorFactory.createOperator(driverContext));
-        driver.initialize();
 
         valuesOperatorFactory.noMoreOperators();
         nestedLoopBuildOperatorFactory.noMoreOperators();

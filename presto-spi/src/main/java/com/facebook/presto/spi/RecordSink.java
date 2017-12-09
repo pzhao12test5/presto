@@ -11,18 +11,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.facebook.presto.connector.thrift.clientproviders;
+package com.facebook.presto.spi;
 
-import com.facebook.presto.spi.HostAddress;
+import com.facebook.presto.spi.type.Type;
+import io.airlift.slice.Slice;
 
+import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.List;
 
-public interface ConnectedThriftServiceProvider
-        extends PrestoThriftServiceProvider
+public interface RecordSink
 {
-    @Override
-    ConnectedThriftService anyHostClient();
+    void beginRecord();
 
-    @Override
-    ConnectedThriftService selectedHostClient(List<HostAddress> hosts);
+    void finishRecord();
+
+    void appendNull();
+
+    void appendBoolean(boolean value);
+
+    void appendLong(long value);
+
+    void appendDouble(double value);
+
+    void appendBigDecimal(BigDecimal value);
+
+    void appendString(byte[] value);
+
+    void appendObject(Object value);
+
+    Collection<Slice> commit();
+
+    void rollback();
+
+    List<Type> getColumnTypes();
 }

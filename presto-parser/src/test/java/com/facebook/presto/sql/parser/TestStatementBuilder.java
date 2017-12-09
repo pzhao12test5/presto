@@ -22,7 +22,6 @@ import org.testng.annotations.Test;
 import java.io.IOException;
 import java.util.Optional;
 
-import static com.facebook.presto.sql.parser.ParsingOptions.DecimalLiteralTreatment.AS_DOUBLE;
 import static com.facebook.presto.sql.testing.TreeAssertions.assertFormattedSql;
 import static com.google.common.base.Strings.repeat;
 import static java.lang.String.format;
@@ -310,8 +309,7 @@ public class TestStatementBuilder
         println(sql.trim());
         println("");
 
-        ParsingOptions parsingOptions = new ParsingOptions(AS_DOUBLE /* anything */);
-        Statement statement = SQL_PARSER.createStatement(sql, parsingOptions);
+        Statement statement = SQL_PARSER.createStatement(sql);
         println(statement.toString());
         println("");
 

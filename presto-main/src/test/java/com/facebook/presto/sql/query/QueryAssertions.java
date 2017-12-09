@@ -60,7 +60,7 @@ class QueryAssertions
 
         MaterializedResult expectedResults = null;
         try {
-            expectedResults = runner.execute(runner.getDefaultSession(), expected).toJdbcTypes();
+            expectedResults = runner.execute(runner.getDefaultSession(), expected);
         }
         catch (RuntimeException ex) {
             fail("Execution of 'expected' query failed: " + expected, ex);

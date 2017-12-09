@@ -11,26 +11,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.facebook.presto.spi.connector;
+package com.facebook.presto.connector.thrift.annotations;
 
-public class NotPartitionedPartitionHandle
-        extends ConnectorPartitionHandle
+import com.google.inject.BindingAnnotation;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
+import static java.lang.annotation.ElementType.PARAMETER;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
+@BindingAnnotation
+@Target(PARAMETER)
+@Retention(RUNTIME)
+public @interface NonRetrying
 {
-    public static final ConnectorPartitionHandle NOT_PARTITIONED = new NotPartitionedPartitionHandle();
-
-    private NotPartitionedPartitionHandle()
-    {
-    }
-
-    @Override
-    public boolean equals(Object obj)
-    {
-        return obj == NOT_PARTITIONED;
-    }
-
-    @Override
-    public int hashCode()
-    {
-        return 0;
-    }
 }

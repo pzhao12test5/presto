@@ -20,8 +20,6 @@ public interface JoinProbe
 {
     int getOutputChannelCount();
 
-    int[] getOutputChannels();
-
     boolean advanceNextPosition();
 
     long getCurrentJoinPosition(LookupSource lookupSource);

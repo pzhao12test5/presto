@@ -13,11 +13,14 @@
  */
 package com.facebook.presto.spi.connector;
 
-public abstract class ConnectorPartitionHandle
-{
-    @Override
-    public abstract boolean equals(Object obj);
+import com.facebook.presto.spi.ConnectorInsertTableHandle;
+import com.facebook.presto.spi.ConnectorOutputTableHandle;
+import com.facebook.presto.spi.ConnectorSession;
+import com.facebook.presto.spi.RecordSink;
 
-    @Override
-    public abstract int hashCode();
+public interface ConnectorRecordSinkProvider
+{
+    RecordSink getRecordSink(ConnectorTransactionHandle transactionHandle, ConnectorSession session, ConnectorOutputTableHandle tableHandle);
+
+    RecordSink getRecordSink(ConnectorTransactionHandle transactionHandle, ConnectorSession session, ConnectorInsertTableHandle tableHandle);
 }

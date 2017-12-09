@@ -13,13 +13,17 @@ package com.facebook.presto.type;
  * limitations under the License.
  */
 
-import com.facebook.presto.operator.scalar.AbstractTestFunctions;
+import com.facebook.presto.Session;
+import com.facebook.presto.operator.scalar.FunctionAssertions;
 import com.facebook.presto.spi.type.SqlDate;
 import com.facebook.presto.spi.type.SqlTimestamp;
 import com.facebook.presto.spi.type.SqlTimestampWithTimeZone;
 import com.facebook.presto.spi.type.TimeZoneKey;
+import com.facebook.presto.spi.type.Type;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import java.util.concurrent.TimeUnit;
@@ -32,19 +36,35 @@ import static com.facebook.presto.spi.type.TimestampWithTimeZoneType.TIMESTAMP_W
 import static com.facebook.presto.spi.type.VarcharType.VARCHAR;
 import static com.facebook.presto.testing.TestingSession.testSessionBuilder;
 import static com.facebook.presto.util.DateTimeZoneIndex.getDateTimeZone;
+import static io.airlift.testing.Closeables.closeAllRuntimeException;
 import static org.joda.time.DateTimeZone.UTC;
 
 public class TestDate
-        extends AbstractTestFunctions
 {
     private static final TimeZoneKey TIME_ZONE_KEY = getTimeZoneKey("Europe/Berlin");
     private static final DateTimeZone DATE_TIME_ZONE = getDateTimeZone(TIME_ZONE_KEY);
 
-    public TestDate()
+    private FunctionAssertions functionAssertions;
+
+    @BeforeClass
+    public void setUp()
     {
-        super(testSessionBuilder()
+        Session session = testSessionBuilder()
                 .setTimeZoneKey(TIME_ZONE_KEY)
-                .build());
+                .build();
+        functionAssertions = new FunctionAssertions(session);
+    }
+
+    @AfterClass(alwaysRun = true)
+    public void tearDown()
+    {
+        closeAllRuntimeException(functionAssertions);
+        functionAssertions = null;
+    }
+
+    private void assertFunction(String projection, Type expectedType, Object expected)
+    {
+        functionAssertions.assertFunction(projection, expectedType, expected);
     }
 
     @Test

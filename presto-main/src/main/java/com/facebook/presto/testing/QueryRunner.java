@@ -18,7 +18,6 @@ import com.facebook.presto.cost.CostCalculator;
 import com.facebook.presto.metadata.Metadata;
 import com.facebook.presto.metadata.QualifiedObjectName;
 import com.facebook.presto.spi.Plugin;
-import com.facebook.presto.sql.planner.NodePartitioningManager;
 import com.facebook.presto.transaction.TransactionManager;
 import org.intellij.lang.annotations.Language;
 
@@ -40,8 +39,6 @@ public interface QueryRunner
     TransactionManager getTransactionManager();
 
     Metadata getMetadata();
-
-    NodePartitioningManager getNodePartitioningManager();
 
     CostCalculator getCostCalculator();
 

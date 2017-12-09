@@ -17,9 +17,11 @@ import io.airlift.slice.Slice;
 import io.airlift.slice.Slices;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 
 import static java.lang.Math.ceil;
-import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toSet;
 
 final class BlockUtil
 {
@@ -33,34 +35,18 @@ final class BlockUtil
     {
     }
 
-    static void checkValidPositions(int[] positions, int offset, int length, int positionCount)
+    static void checkValidPositions(List<Integer> positions, int positionCount)
     {
-        checkValidPositionsArray(positions, offset, length);
-
-        for (int i = offset; i < offset + length; ++i) {
-            int position = positions[i];
-            if (position > positionCount) {
-                throw new IllegalArgumentException(String.format("Invalid position '%s' in block with '%s' positions", position, positionCount));
-            }
-        }
-    }
-
-    static void checkValidPositionsArray(int[] positions, int offset, int length)
-    {
-        requireNonNull(positions, "positions array is null");
-        if (offset < 0 || offset > positions.length) {
-            throw new IndexOutOfBoundsException(String.format("Invalid offset '%s' for positions array with '%s' elements", offset, positions.length));
-        }
-
-        if (length < 0 || offset + length > positions.length) {
-            throw new IndexOutOfBoundsException(String.format("Invalid length '%s' for positions array with '%s' elements and offset: '%s", length, positions.length, offset));
+        Set<Integer> invalidPositions = positions.stream().filter(position -> position >= positionCount).collect(toSet());
+        if (!invalidPositions.isEmpty()) {
+            throw new IllegalArgumentException("Invalid positions " + invalidPositions + " in block with " + positionCount + " positions");
         }
     }
 
     static void checkValidRegion(int positionCount, int positionOffset, int length)
     {
         if (positionOffset < 0 || length < 0 || positionOffset + length > positionCount) {
-            throw new IndexOutOfBoundsException(String.format("Invalid position '%s' in block with '%s' positions", positionOffset, positionCount));
+            throw new IndexOutOfBoundsException("Invalid position " + positionOffset + " in block with " + positionCount + " positions");
         }
     }
 
@@ -76,7 +62,7 @@ final class BlockUtil
         else if (newSize > MAX_ARRAY_SIZE) {
             newSize = MAX_ARRAY_SIZE;
             if (newSize == currentSize) {
-                throw new IllegalArgumentException(String.format("Can not grow array beyond '%s'", MAX_ARRAY_SIZE));
+                throw new IllegalArgumentException("Can not grow array beyond " + MAX_ARRAY_SIZE);
             }
         }
         return (int) newSize;
@@ -184,7 +170,7 @@ final class BlockUtil
 
     /**
      * Returns <tt>true</tt> if the two specified arrays contain the same object in every position.
-     * Unlike the {@link Arrays#equals(Object[], Object[])} method, this method compares using reference equals.
+     * Unlike the {@link Arrays#equals(Object[],Object[])} method, this method compares using reference equals.
      */
     static boolean arraySame(Object[] array1, Object[] array2)
     {

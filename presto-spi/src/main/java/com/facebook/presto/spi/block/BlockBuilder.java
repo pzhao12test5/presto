@@ -76,15 +76,6 @@ public interface BlockBuilder
     }
 
     /**
-     * Create a new block from the current materialized block by keeping the same elements
-     * only with respect to {@code visiblePositions}.
-     */
-    default Block getPositions(int[] visiblePositions)
-    {
-        return build().getPositions(visiblePositions);
-    }
-
-    /**
      * Write a byte to the current entry;
      */
     BlockBuilder closeEntry();

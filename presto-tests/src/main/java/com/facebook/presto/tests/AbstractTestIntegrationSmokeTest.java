@@ -103,7 +103,7 @@ public abstract class AbstractTestIntegrationSmokeTest
         MaterializedResult actualSchemas = computeActual("SHOW SCHEMAS").toJdbcTypes();
 
         MaterializedResult.Builder resultBuilder = MaterializedResult.resultBuilder(getQueryRunner().getDefaultSession(), VARCHAR)
-                .row(getQueryRunner().getDefaultSession().getSchema().orElse("tpch"));
+                .row("tpch");
 
         assertContains(actualSchemas, resultBuilder.build());
     }

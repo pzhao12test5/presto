@@ -36,7 +36,7 @@ public class TestStaticLocationProvider
         HostLocationProvider provider = new StaticLocationProvider(new StaticLocationConfig().setHosts(HostList.fromList(expected)));
         List<HostAddress> actual = new ArrayList<>(expected.size());
         for (int i = 0; i < expected.size(); i++) {
-            actual.add(provider.getAnyHost().getHostAddress());
+            actual.add(provider.getAnyHost());
         }
         assertEquals(ImmutableSet.copyOf(actual), ImmutableSet.copyOf(expected));
     }

@@ -25,9 +25,7 @@ function hadoop_master_container(){
 }
 
 function check_hadoop() {
-  HADOOP_MASTER_CONTAINER=$(hadoop_master_container)
-  docker exec ${HADOOP_MASTER_CONTAINER} supervisorctl status hive-server2 | grep -iq running && \
-    docker exec ${HADOOP_MASTER_CONTAINER} netstat -lpn | grep -iq 0.0.0.0:10000
+  docker exec $(hadoop_master_container) supervisorctl status hive-server2 | grep -i running
 }
 
 function stop_unnecessary_hadoop_services() {
@@ -48,7 +46,7 @@ function check_presto() {
   run_in_application_runner_container \
     java -jar "/docker/volumes/presto-cli/presto-cli-executable.jar" \
     ${CLI_ARGUMENTS} \
-    --execute "SHOW CATALOGS" | grep -iq hive
+    --execute "SHOW CATALOGS" | grep -i hive
 }
 
 function run_product_tests() {

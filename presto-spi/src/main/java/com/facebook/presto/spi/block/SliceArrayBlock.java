@@ -19,6 +19,7 @@ import org.openjdk.jol.info.ClassLayout;
 
 import java.util.Arrays;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
@@ -91,18 +92,17 @@ public class SliceArrayBlock
     }
 
     @Override
-    public Block copyPositions(int[] positions, int offset, int length)
+    public Block copyPositions(List<Integer> positions)
     {
-        checkValidPositions(positions, offset, length, positionCount);
+        checkValidPositions(positions, positionCount);
 
-        Slice[] newValues = new Slice[length];
-        for (int i = 0; i < length; i++) {
-            int position = positions[offset + i];
-            if (!isEntryNull(position)) {
-                newValues[i] = Slices.copyOf(values[position]);
+        Slice[] newValues = new Slice[positions.size()];
+        for (int i = 0; i < positions.size(); i++) {
+            if (!isEntryNull(positions.get(i))) {
+                newValues[i] = Slices.copyOf(values[positions.get(i)]);
             }
         }
-        return new SliceArrayBlock(length, newValues);
+        return new SliceArrayBlock(positions.size(), newValues);
     }
 
     @Override

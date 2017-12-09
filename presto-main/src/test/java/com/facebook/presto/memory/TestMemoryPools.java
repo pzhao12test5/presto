@@ -119,9 +119,7 @@ public class TestMemoryPools
             RevocableMemoryOperator revocableMemoryOperator = new RevocableMemoryOperator(revokableOperatorContext, reservedPerPage, numberOfPages);
             createOperator.set(revocableMemoryOperator);
 
-            Driver driver = new Driver(driverContext, revocableMemoryOperator, outputOperator);
-            driver.initialize();
-            return ImmutableList.of(driver);
+            return ImmutableList.of(new Driver(driverContext, revocableMemoryOperator, outputOperator));
         });
         return createOperator.get();
     }

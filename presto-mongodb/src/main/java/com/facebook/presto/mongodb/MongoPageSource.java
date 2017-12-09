@@ -52,11 +52,12 @@ import static com.google.common.base.Preconditions.checkState;
 import static io.airlift.slice.Slices.utf8Slice;
 import static io.airlift.slice.Slices.wrappedBuffer;
 import static java.util.stream.Collectors.toList;
+import static org.joda.time.DateTimeZone.UTC;
 
 public class MongoPageSource
         implements ConnectorPageSource
 {
-    private static final ISOChronology UTC_CHRONOLOGY = ISOChronology.getInstanceUTC();
+    private static final ISOChronology UTC_CHRONOLOGY = ISOChronology.getInstance(UTC);
     private static final int ROWS_PER_REQUEST = 1024;
 
     private final MongoCursor<Document> cursor;
@@ -64,6 +65,7 @@ public class MongoPageSource
     private final List<Type> columnTypes;
     private Document currentDoc;
     private long count;
+    private long totalCount;
     private boolean finished;
 
     public MongoPageSource(
@@ -122,6 +124,7 @@ public class MongoPageSource
             }
         }
 
+        totalCount += count;
         return pageBuilder.build();
     }
 
