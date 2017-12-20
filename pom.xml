@@ -55,7 +55,7 @@
         <dep.testng.version>6.10</dep.testng.version>
         <dep.assertj-core.version>3.8.0</dep.assertj-core.version>
         <dep.nifty.version>0.15.1</dep.nifty.version>
-        <dep.swift.version>0.15.6</dep.swift.version>
+        <dep.swift.version>0.15.2</dep.swift.version>
 
         <!-- use a fractional hour timezone offset for tests -->
 
@@ -68,7 +68,7 @@
     <gib.commitRange>${env.TRAVIS_COMMIT_RANGE}</gib.commitRange>
         <gib.enabled>true</gib.enabled>
         <gib.useEkstazi>true</gib.useEkstazi>
-        <gib.excludePathRegex>(.*\.txt$)|(.*\.md$)|(.*\.html$)|(.*\.rst$)|(.*\.scss$)|(.*\.css$)|(.*\.png$)|(.*\.py$)|(.*README$)|(.*\.jpg$)|(.*\.jpeg$)|(.*NOTICE$)|(.*\.gitignore$)</gib.excludePathRegex>
+        <gib.excludePathRegex>(.*\.apt$)|(.*\.txt$)|(.*\.md$)|(.*\.html$)|(.*\.rst$)|(.*\.scss$)|(.*\.css$)|(.*\.png$)|(.*\.py$)|(.*README$)|(.*\.jpg$)|(.*\.jpeg$)|(.*NOTICE$)|(.*\.gitignore$)</gib.excludePathRegex>
     </properties>
 
     <modules>
@@ -1277,11 +1277,6 @@
                 <configuration combine.children="append">
                     <fork>false</fork>
                 </configuration>
-            </plugin>
-        <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.19</version>
             </plugin>
         </plugins>
     <extensions>
